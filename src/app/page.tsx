@@ -21,6 +21,7 @@ import { Badge } from '@/components/ui/badge';
 import { PromptResponse } from '@/lib/types';
 
 import { Card } from '@/components/ui/card';
+import ReactMarkdown from 'react-markdown';
 
 export const dynamic = 'force-dynamic';
 
@@ -212,6 +213,44 @@ function RatingBar({
 }
 
 const RenderData = ({ data }: { data: any }) => {
+	const [promptResponse, setPromptResponse] = useState(null);
+	const [isLoading, setIsLoading] = useState(false);
+
+	async function getPromptResponse(prompt: string) {
+		try {
+			setIsLoading(true);
+			console.log('RECIEVED RESPONSE: ', prompt);
+
+			const response = await fetch(`/api/google/create`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(prompt),
+				cache: 'no-store',
+			});
+
+			if (!response.ok) {
+				console.error(response.statusText[0]);
+				return;
+			}
+
+			const json = await response.json();
+
+			console.log('RESPONSE RECIEVED', json);
+
+			setPromptResponse(json.candidates[0].content.parts[0].text);
+			console.log('RESPONSE PARSED', promptResponse);
+		} catch (error) {
+			console.log(
+				(error as Error).message ||
+					'An error occurred while connecting to the model.'
+			);
+		} finally {
+			setIsLoading(false);
+		}
+	}
+
 	return (
 		<div className='md:p-4 sm:p-2 p-0'>
 			<div className='grid md:grid-cols-3 grid-cols-1 gap-2 md:gap-4'>
@@ -248,34 +287,50 @@ const RenderData = ({ data }: { data: any }) => {
 				<h2 className='text-xl font-bold text-fuchsia-950'>Improved Prompts</h2>
 
 				{data.improved_prompt.map((prompt: any, index: number) => (
-					<div
-						key={index}
-						className='relative mt-2 p-4 border-l-4 border-yellow-600 pl-4 italic shadow bg-white rounded-xl'
-					>
-						<button
-							className='absolute top-0 right-0 m-2 text-gray-500 hover:text-gray-800'
-							onClick={() => {
-								navigator.clipboard.writeText(prompt.description);
-							}}
-						>
-							<svg
-								xmlns='http://www.w3.org/2000/svg'
-								fill='none'
-								viewBox='0 0 24 24'
-								stroke='currentColor'
-								className='h-6 w-6'
+					<div key={index}>
+						<div className='relative mt-2 p-4 border-l-4 border-yellow-600 pl-4 italic shadow bg-white rounded-xl'>
+							<button
+								className='absolute top-0 right-0 m-2 text-gray-500 hover:text-gray-800'
+								onClick={() => {
+									navigator.clipboard.writeText(prompt.description);
+								}}
 							>
-								<path
-									strokeLinecap='round'
-									strokeLinejoin='round'
-									strokeWidth={2}
-									d='M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z'
-								/>
-							</svg>
-						</button>
-						<blockquote className='italic pr-4'>
-							<p>{prompt.description}</p>
-						</blockquote>
+								<svg
+									xmlns='http://www.w3.org/2000/svg'
+									fill='none'
+									viewBox='0 0 24 24'
+									stroke='currentColor'
+									className='h-6 w-6'
+								>
+									<path
+										strokeLinecap='round'
+										strokeLinejoin='round'
+										strokeWidth={2}
+										d='M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z'
+									/>
+								</svg>
+							</button>
+							<blockquote className='italic pr-4'>
+								<p>{prompt.description}</p>
+							</blockquote>
+						</div>
+						<Button
+							className='bg-fuchsia-950 hover:bg-fuchsia-900 mt-2'
+							size={'sm'}
+							onClick={() => {
+								getPromptResponse(prompt.description);
+							}}
+							isLoading={isLoading}
+							disabled={isLoading}
+						>
+							Try the prompt now!
+						</Button>
+
+						<div className='mt-4'>
+							{promptResponse && (
+								<ReactMarkdown>{promptResponse}</ReactMarkdown>
+							)}
+						</div>
 					</div>
 				))}
 			</div>
