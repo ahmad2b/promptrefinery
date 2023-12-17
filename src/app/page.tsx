@@ -1,33 +1,32 @@
 'use client';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import ReactMarkdown from 'react-markdown';
 import { zodResolver } from '@hookform/resolvers/zod';
 
+import { PromptResponse } from '@/lib/types';
+import { PromptRequest, PromptValidator } from '@/lib/utils';
+
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import {
 	Form,
 	FormControl,
-	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
 	FormMessage,
 } from '@/components/ui/form';
-import { PromptRequest, PromptValidator } from '@/lib/utils';
-import { useState } from 'react';
-
-import { Badge } from '@/components/ui/badge';
-import { PromptResponse } from '@/lib/types';
-
-import { Card } from '@/components/ui/card';
-import ReactMarkdown from 'react-markdown';
+import { RatingBar } from '@/components/rating-bar';
 
 export const dynamic = 'force-dynamic';
 
 export default function Home() {
-	const [responseData, setResponseData] = useState<PromptResponse | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
+	const [responseData, setResponseData] = useState<PromptResponse | null>(null);
 
 	const form = useForm<PromptRequest>({
 		resolver: zodResolver(PromptValidator),
@@ -36,7 +35,6 @@ export default function Home() {
 	async function onSubmit(value: PromptRequest) {
 		try {
 			setIsLoading(true);
-
 			const data = PromptValidator.safeParse(value);
 
 			if (!data.success) {
@@ -57,13 +55,8 @@ export default function Home() {
 				return;
 			}
 
-			// console.log(response);
-
 			const json = await response.json();
-
-			// console.log(json.candidates[0].content.parts[0].text);
-
-			setResponseData(JSON.parse(json.candidates[0].content.parts[0].text)); // Set the JSON response to the state variable
+			setResponseData(JSON.parse(json.candidates[0].content.parts[0].text));
 		} catch (error) {
 			console.log(
 				(error as Error).message ||
@@ -108,9 +101,7 @@ export default function Home() {
 													{...field}
 												/>
 											</FormControl>
-											{/* <FormDescription>
-								Enter a prompt to refine or construct.
-							</FormDescription> */}
+
 											<FormMessage />
 										</FormItem>
 									)}
@@ -129,6 +120,7 @@ export default function Home() {
 					</Card>
 				</div>
 
+				{/* Web Copy & Description */}
 				<div className='col-span-1 hidden md:block'>
 					<div className='flex flex-col space-y-4 max-w-xl '>
 						<h3 className='scroll-m-20 text-xl text-left font-semibold tracking-tight'>
@@ -173,60 +165,26 @@ export default function Home() {
 	);
 }
 
-function RatingBar({
-	rating,
-	maxRating,
-}: {
-	rating: number;
-	maxRating: number;
-}) {
-	const percentage = (rating / maxRating) * 100;
-
-	return (
-		<div className='flex flex-col md:flex-row space-y-2 md:space-y-0 items-center w-full space-x-0 md:space-x-4 md:px-6 sm:px-4 px-2'>
-			<Badge className='w-fit py-0.5 md:py-2 bg-fuchsia-950 flex-shrink-0'>
-				Prompt rating
-			</Badge>
-
-			<div className='relative h-3 w-full bg-gray-200 rounded shadow'>
-				<div
-					className='absolute h-full bg-purple-400 rounded transition-all duration-500 ease-in-out'
-					role='progressbar'
-					style={{
-						width: `${percentage}%`,
-					}}
-				>
-					<span className='sr-only'>
-						User rating: {rating} out of {maxRating}
-					</span>
-				</div>
-				<div className='absolute inset-0 flex items-center justify-center font-bold tracking-wide'>
-					<span className='text-[11px] flex space-x-2'>
-						<span>{rating}</span>
-						<span>/</span>
-						<span className='tracking-widest'>{maxRating}</span>
-					</span>
-				</div>
-			</div>
-		</div>
-	);
-}
-
 const RenderData = ({ data }: { data: any }) => {
-	const [promptResponse, setPromptResponse] = useState(null);
 	const [isLoading, setIsLoading] = useState(false);
+	const [promptResponse, setPromptResponse] = useState(null);
 
 	async function getPromptResponse(prompt: string) {
 		try {
+			console.log(prompt);
 			setIsLoading(true);
-			console.log('RECIEVED RESPONSE: ', prompt);
+
+			if (!prompt) {
+				console.log('Prompt is empty');
+				return;
+			}
 
 			const response = await fetch(`/api/google/create`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 				},
-				body: JSON.stringify(prompt),
+				body: JSON.stringify({ prompt }),
 				cache: 'no-store',
 			});
 
@@ -236,11 +194,7 @@ const RenderData = ({ data }: { data: any }) => {
 			}
 
 			const json = await response.json();
-
-			console.log('RESPONSE RECIEVED', json);
-
 			setPromptResponse(json.candidates[0].content.parts[0].text);
-			console.log('RESPONSE PARSED', promptResponse);
 		} catch (error) {
 			console.log(
 				(error as Error).message ||

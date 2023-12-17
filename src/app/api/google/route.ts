@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import {
 	GoogleGenerativeAI,
 	HarmCategory,
 	HarmBlockThreshold,
 } from '@google/generative-ai';
-
 import { PromptValidator, getGoogleAPIKey } from '@/lib/utils';
 
 const MODEL_NAME = 'gemini-pro';
@@ -87,17 +85,14 @@ async function generate(prompt: string) {
 }
 
 export async function POST(request: NextRequest) {
-	const cookieStore = cookies();
 	const body = await request.json();
 	const data = PromptValidator.parse(body);
 
 	if (!data.prompt) {
-		return NextResponse.json('Invalid request', { status: 400 });
+		return NextResponse.json('Bad request', { status: 400 });
 	}
 
 	const response = await generate(data.prompt);
-
-	// console.log(response);
 
 	return NextResponse.json(response, { status: 200 });
 }
