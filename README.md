@@ -1,3 +1,7 @@
+## Try Here: https://promptrefinery.vercel.app/
+
+Prompts reference guide: https://medium.com/@eldatero/master-the-perfect-chatgpt-prompt-formula-c776adae8f19
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
