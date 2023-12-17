@@ -16,20 +16,13 @@ import {
 } from '@/components/ui/form';
 import { PromptRequest, PromptValidator } from '@/lib/utils';
 import { useState } from 'react';
-import { ThreadMessage } from 'openai/resources/beta/threads/index.mjs';
-import ReactMarkdown from 'react-markdown';
-import { Badge } from '@/components/ui/badge';
-import { PromptResponse, ResponseEvaluation, Score } from '@/lib/types';
 
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from '@/components/ui/card';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { Badge } from '@/components/ui/badge';
+import { PromptResponse } from '@/lib/types';
+
+import { Card } from '@/components/ui/card';
+
+export const dynamic = 'force-dynamic';
 
 export default function Home() {
 	const [responseData, setResponseData] = useState<PromptResponse | null>(null);
@@ -55,6 +48,7 @@ export default function Home() {
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify(data.data),
+				cache: 'no-store',
 			});
 
 			if (!response.ok) {
@@ -62,11 +56,11 @@ export default function Home() {
 				return;
 			}
 
-			console.log(response);
+			// console.log(response);
 
 			const json = await response.json();
 
-			console.log(json.candidates[0].content.parts[0].text);
+			// console.log(json.candidates[0].content.parts[0].text);
 
 			setResponseData(JSON.parse(json.candidates[0].content.parts[0].text)); // Set the JSON response to the state variable
 		} catch (error) {
@@ -252,13 +246,7 @@ const RenderData = ({ data }: { data: any }) => {
 
 			<div className='mt-4 flex flex-col space-y-3'>
 				<h2 className='text-xl font-bold text-fuchsia-950'>Improved Prompts</h2>
-				{/* {data.improved_prompt.map((prompt, index) => (
-			// <div key={index} className="mt-2 p-4 border rounded shadow">
-			<blockquote key={index} className="mt-2 p-4 border-l-4 border-yellow-600 pl-4 italic rounded shadow">
-			  
-			  <p>{prompt.description}</p>
-			</blockquote>
-		  ))} */}
+
 				{data.improved_prompt.map((prompt: any, index: number) => (
 					<div
 						key={index}
@@ -268,7 +256,6 @@ const RenderData = ({ data }: { data: any }) => {
 							className='absolute top-0 right-0 m-2 text-gray-500 hover:text-gray-800'
 							onClick={() => {
 								navigator.clipboard.writeText(prompt.description);
-								// setCopySuccess('Copied!');
 							}}
 						>
 							<svg
@@ -289,7 +276,6 @@ const RenderData = ({ data }: { data: any }) => {
 						<blockquote className='italic pr-4'>
 							<p>{prompt.description}</p>
 						</blockquote>
-						{/* {copySuccess && <span className="text-green-500">{copySuccess}</span>} */}
 					</div>
 				))}
 			</div>
