@@ -127,7 +127,7 @@ export default function Home() {
 							Elevate your AI interactions with Prompt Refinery
 						</h3>
 						<p className='text-left text-sm'>
-							Prompt Refinery dissects your input on five key components:{' '}
+							Prompt Refinery dissects your input on six key components:{' '}
 							<b className='font-semibold'>
 								Task, Content, Exemplar, Persona, Format, Tone
 							</b>
